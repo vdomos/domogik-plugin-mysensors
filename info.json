@@ -1,0 +1,406 @@
+{
+    "json_version": 2,
+
+    "identity": {
+        "author": "domos",
+        "author_email": "domos.vesta at gmail.com",
+        "tags": ["Protocol"],
+        "dependencies": [],
+        "description": "Domogik Plugin for MySensors Network",
+        "domogik_min_version": "0.5.0",
+        "name": "mysensors",
+        "type": "plugin",
+        "version": "0.20170329"
+    },
+
+    "configuration": [
+        {
+            "name": "Serial MySensors Gateway Device",
+            "default": "", 
+            "description": "Serial MySensors Gateway Device (/dev/ttyUSBx)", 
+            "key": "gw_device", 
+            "required": "yes", 
+            "type": "string"
+        } 
+    ],
+
+    "device_types": {
+        "mysensors.node": {
+            "id": "mysensors.node",
+            "description": "Node Informations: Node type, api version, sketch name, version, battery level",
+            "name": "MySensors Node Informations",
+            "commands": [],
+            "sensors": ["nodetype", "nodeapiversion", "i_config", "i_sketch_name", "i_sketch_version", "i_battery_level"], 
+            "parameters": [
+                    {
+                        "key": "nodeid",
+                        "xpl": false,
+                        "description": "nodeid (ex: 44)",
+                        "type": "string",
+                        "default": ""
+                    }
+            ]
+        },
+        "mysensors.s_temp": {
+            "id": "mysensors.s_temp",
+            "description": "",
+            "name": "MySensors s_temp",
+            "commands": [],
+            "sensors": ["v_temp", "v_id"],
+            "parameters": [
+                    {
+                        "key": "nodesensor",
+                        "xpl": false,
+                        "description": "nodeid.childid (ex: 44.1)",
+                        "type": "string",
+                        "default": ""
+                    }
+            ]
+        },
+        "mysensors.s_hum": {
+            "id": "mysensors.s_hum",
+            "description": "",
+            "name": "MySensors s_hum",
+            "commands": [],
+            "sensors": ["v_hum"],
+            "parameters": [
+                    {
+                        "key": "nodesensor",
+                        "xpl": false,
+                        "description": "nodeid.childid (ex: 44.1)",
+                        "type": "string",
+                        "default": ""
+                    }
+            ]
+        },
+        "mysensors.s_light_level": {
+            "id": "mysensors.s_light_level",
+            "description": "",
+            "name": "MySensors s_light_level",
+            "commands": [],
+            "sensors": ["v_light_level", "v_level"],
+            "parameters": [
+                    {
+                        "key": "nodeid",
+                        "xpl": false,
+                        "description": "nodeid.child (ex: 44.1)",
+                        "type": "string",
+                        "default": ""
+                    }
+            ]
+        },
+        "mysensors.s_binary": {
+            "id": "mysensors.s_binary",
+            "description": "",
+            "name": "MySensors s_binary",
+            "commands": ["v_status"],
+            "sensors": ["v_status"],
+            "parameters": [
+                    {
+                        "key": "nodeid",
+                        "xpl": false,
+                        "description": "nodeid.child (ex: 44.1)",
+                        "type": "string",
+                        "default": ""
+                    }
+            ]
+        },
+        "mysensors.s_dimmer": {
+            "id": "mysensors.s_dimmer",
+            "description": "",
+            "name": "MySensors s_dimmer",
+            "commands": ["v_status"],
+            "sensors": ["v_status", "v_percentage"],
+            "parameters": [
+                    {
+                        "key": "nodeid",
+                        "xpl": false,
+                        "description": "nodeid.child (ex: 44.1)",
+                        "type": "string",
+                        "default": ""
+                    }
+            ]
+        },
+        "mysensors.s_baro": {
+            "id": "mysensors.s_baro",
+            "description": "",
+            "name": "MySensors s_baro",
+            "commands": [],
+            "sensors": ["v_pressure", "v_forecast"],
+            "parameters": [
+                    {
+                        "key": "nodeid",
+                        "xpl": false,
+                        "description": "nodeid.child (ex: 44.1)",
+                        "type": "string",
+                        "default": ""
+                    }
+            ]
+        },
+
+        "mysensors.s_binary": {
+            "id": "mysensors.s_binary",
+            "description": "",
+            "name": "MySensors s_binary",
+            "commands": ["v_status"],
+            "sensors": ["v_status"],
+            "parameters": [
+                    {
+                        "key": "nodeid",
+                        "xpl": false,
+                        "description": "nodeid.child (ex: 44.1)",
+                        "type": "string",
+                        "default": ""
+                    }
+            ]
+        }
+    },
+
+    "sensors" : {
+       "v_temp" : {
+            "name" : "Temperature",
+            "incremental": false,
+            "data_type" : "DT_Temp",
+            "conversion" : "",
+            "timeout": 900,
+            "history": {
+                    "store": true,
+                    "duplicate": false,
+                    "max": 0,
+                    "expire": 0,
+                    "round_value": 0
+            }
+        },
+       "v_id" : {
+            "name" : "Sensor id",
+            "incremental": false,
+            "data_type" : "DT_String",
+            "conversion" : "",
+            "timeout": 900,
+            "history": {
+                    "store": true,
+                    "duplicate": false,
+                    "max": 0,
+                    "expire": 0,
+                    "round_value": 0
+            }
+        },
+        "v_hum" : {
+            "name" : "Humidity",
+            "incremental": false,
+            "data_type" : "DT_Humidity",
+            "conversion" : "",
+            "timeout": 900,
+            "history": {
+                    "store": true,
+                    "duplicate": false,
+                    "max": 0,
+                    "expire": 0,
+                    "round_value": 0
+            }
+        },
+        "v_status" : {
+            "name" : "Status",
+            "incremental": false,
+            "data_type" : "DT_Switch",
+            "conversion" : "",
+            "timeout": 0,
+            "history": {
+                    "store": true,
+                    "duplicate": false,
+                    "max": 0,
+                    "expire": 0,
+                    "round_value": 0
+            }
+        },
+        "v_pressure" : {
+            "name" : "Barometer",
+            "incremental": false,
+            "data_type" : "DT_mbarPressure",
+            "conversion" : "",
+            "timeout": 900,
+            "history": {
+                    "store": true,
+                    "duplicate": false,
+                    "max": 0,
+                    "expire": 0,
+                    "round_value": 0
+            }
+        },
+        "v_forecast" : { 
+            "name" : "Weather forecast",
+            "incremental": false,
+            "data_type" : "DT_String",
+            "conversion" : "",
+            "timeout": 900,
+            "history": {
+                    "store": true,
+                    "duplicate": false,
+                    "max": 0,
+                    "expire": 0,
+                    "round_value": 0
+            }
+        },
+        "v_light_level" : {
+            "name" : "Light level",
+            "incremental": false,
+            "data_type" : "DT_Scaling",
+            "conversion" : "",
+            "timeout": 900,
+            "history": {
+                    "store": true,
+                    "duplicate": false,
+                    "max": 0,
+                    "expire": 0,
+                    "round_value": 0
+            }
+        },
+        "v_level" : {
+            "name" : "Light lux level",
+            "incremental": false,
+            "data_type" : "DT_Brightness",
+            "conversion" : "",
+            "timeout": 900,
+            "history": {
+                    "store": true,
+                    "duplicate": false,
+                    "max": 0,
+                    "expire": 0,
+                    "round_value": 0
+            }
+        },
+        "v_percentage" : {
+            "name" : "Percentage level",
+            "incremental": false,
+            "data_type" : "DT_Scaling",
+            "conversion" : "",
+            "timeout": 900,
+            "history": {
+                    "store": true,
+                    "duplicate": false,
+                    "max": 0,
+                    "expire": 0,
+                    "round_value": 0
+            }
+        },
+        "v_text" : {
+            "name" : "Info",
+            "incremental": false,
+            "data_type" : "DT_String",
+            "conversion" : "",
+            "timeout": 900,
+            "history": {
+                    "store": true,
+                    "duplicate": false,
+                    "max": 0,
+                    "expire": 0,
+                    "round_value": 0
+            }
+        },
+        
+        
+        "i_config" : {
+            "name" : "Config",
+            "incremental": false,
+            "data_type" : "DT_String",
+            "conversion" : "",
+            "timeout": 0,
+            "history": {
+                    "store": true,
+                    "duplicate": false,
+                    "max": 0,
+                    "expire": 0,
+                    "round_value": 0
+            }
+        },
+        "i_sketch_name" : {
+            "name" : "Sketch Name",
+            "incremental": false,
+            "data_type" : "DT_String",
+            "conversion" : "",
+            "timeout": 0,
+            "history": {
+                    "store": true,
+                    "duplicate": false,
+                    "max": 0,
+                    "expire": 0,
+                    "round_value": 0
+            }
+        },
+        "i_sketch_version" : {
+            "name" : "Sketch Version",
+            "incremental": false,
+            "data_type" : "DT_String",
+            "conversion" : "",
+            "timeout": 0,
+            "history": {
+                    "store": true,
+                    "duplicate": false,
+                    "max": 0,
+                    "expire": 0,
+                    "round_value": 0
+            }
+        },
+        "i_battery_level" : {
+            "name" : "Battery level",
+            "incremental": false,
+            "data_type" : "DT_Battery",
+            "conversion" : "",
+            "timeout": 0,
+            "history": {
+                    "store": true,
+                    "duplicate": false,
+                    "max": 0,
+                    "expire": 0,
+                    "round_value": 0
+            }
+        },
+        
+        "nodetype" : {
+            "name" : "Node Type",
+            "incremental": false,
+            "data_type" : "DT_String",
+            "conversion" : "",
+            "timeout": 0,
+            "history": {
+                    "store": true,
+                    "duplicate": false,
+                    "max": 0,
+                    "expire": 0,
+                    "round_value": 0
+            }
+        },
+        "nodeapiversion" : {
+            "name" : "Node Api Version",
+            "incremental": false,
+            "data_type" : "DT_String",
+            "conversion" : "",
+            "timeout": 0,
+            "history": {
+                    "store": true,
+                    "duplicate": false,
+                    "max": 0,
+                    "expire": 0,
+                    "round_value": 0
+            }
+        }        
+    },
+    
+    "commands" : {
+        "v_status" : {
+            "name" : "Switch Cmd",
+            "return_confirmation" : true,
+            "parameters" : [
+                {
+                    "key" : "value",
+                    "data_type" : "DT_Switch",
+                    "conversion" : ""
+                }
+            ]
+        }
+    },
+
+    "products" : [],
+    "xpl_stats": {},
+    "xpl_commands": {}
+}

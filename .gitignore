@@ -1,0 +1,11 @@
+*.pyc
+*.swp
+*.kate-swp
+_build_doc
+*~
+*.[oa]
+*.20*
+*.orig
+*.directory
+local
+domoweb

@@ -1,0 +1,13 @@
+========================
+Development informations
+========================
+
+
+You can find a lot of information in this www.mysensors.org web pages:
+
+* `Getting started <https://www.mysensors.org/about>`_
+* `The Sensor Network <https://www.mysensors.org/about/network>`_
+* `MySensors Library - v2.x <https://www.mysensors.org/download/sensor_api_20>`_
+* `Serial Protocol - 2.x <https://www.mysensors.org/download/serial_api_20>`_
+* `Build sketchs examples <https://www.mysensors.org/build>`_
+
