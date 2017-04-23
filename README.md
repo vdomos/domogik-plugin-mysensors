@@ -13,7 +13,7 @@ You can find the documentation source in the **docs/** folder. When the package 
 You may also find online documentation for this plugin. 
 You will be able to find the documentation url on 
 
-http://domogik-plugin-mysensors.readthedocs.org/en/develop/index.html
+http://domogik-plugin-mysensors.readthedocs.io/en/latest/
 
 
 ## Install the package
