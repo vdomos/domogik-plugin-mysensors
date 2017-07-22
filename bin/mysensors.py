@@ -63,9 +63,10 @@ class MySensorsManager(Plugin):
         self.sensors = self.get_sensors(self.devices)
 
         self.mysensors_gwdevice = self.get_config("gw_device")
+        self.mysensors_autocreatedev = self.get_config("autocreatedev")
         
         # Init MySensors Manager
-        self.mysensorsmanager = MySensors(self.log, self.send_data, self.create_device, self.get_stop())
+        self.mysensorsmanager = MySensors(self.log, self.send_data, self.mysensors_autocreatedev, self.create_device, self.add_detected_device, self.get_stop())
         
         # Set nodes list
         self.setMySensorsNodesList(self.devices)
@@ -238,51 +239,24 @@ class MySensorsManager(Plugin):
         self.log.debug(u"==> Create device result: '%s'" % response)
         if not create_result["status"]:
             self.log.error("### Failed to create device '%s' (%s) !" % (nodeidchildid))
-        '''
-        ==> response = 
-        '['device.create.result', 
-        '{
-        "status": true, 
-        "result": {"info_changed": "2017-03-23 00:17:41", 
-        "commands": {}, 
-        "description": "", 
-        "reference": "", 
-        "xpl_stats": {}, 
-        "xpl_commands": {}, 
-        "client_version": "0.1", 
-        "client_id": "plugin-mysensors.mydomogik", 
-        "device_type_id": "mysensors.node", 
-        "sensors": 
-        {
-        "i_sketch_name": 
-            {
-            "conversion": "", 
-            "value_min": null, 
-            "data_type": "DT_String", 
-            "reference": "i_sketch_name", 
-            "last_received": null, 
-            "value_max": null, 
-            "incremental": false, 
-            "timeout": 0, 
-            "formula": null, 
-            "last_value": null, 
-            "id": 147, 
-            "name": "Sketch Name"
-            }, 
-        "nodetype": 
-            {"conversion": "", "value_min": null, "data_type": "DT_String", "reference": "nodetype", "last_received": null, "value_max": null, "incremental": false, "timeout": 0, "formula": null, "last_value": null, "id": 145, "name": "Node Type"}, 
-        "i_sketch_version": 
-            {"conversion": "", "value_min": null, "data_type": "DT_String", "reference": "i_sketch_version", "last_received": null, "value_max": null, "incremental": false, "timeout": 0, "formula": null, "last_value": null, "id": 148, "name": "Sketch Version"}, 
-        "nodeapiversion": 
-            {"conversion": "", "value_min": null, "data_type": "DT_String", "reference": "nodeapiversion", "last_received": null, "value_max": null, "incremental": false, "timeout": 0, "formula": null, "last_value": null, "id": 146, "name": "Node Api Version"}, 
-        "i_battery_level": 
-            {"conversion": "", "value_min": null, "data_type": "DT_Battery", "reference": "i_battery_level", "last_received": null, "value_max": null, "incremental": false, "timeout": 0, "formula": null, "last_value": null, "id": 149, "name": "Battery level"}
-        }, 
-        "parameters": {"nodesensor": {"key": "nodesensor", "type": "string", "id": 31, "value": "44.255"}}, "id": 23, "name": "Node 44"}
-        }
-        ']'
-        '''
 
+
+    # -------------------------------------------------------------------------------------------------
+    def add_detected_device(self, name, nodeidchildid, devicetype):
+        ''' Add new detected device
+        @param name : Device's name
+        @param nodeidchildid : Node id
+        @param devicetype : Devices's type
+        '''
+        self.device_detected({
+            "device_type" : devicetype,
+            "name": name,
+            "reference" : "Node " + nodeidchildid,
+            "global" : [{"key": "nodesensor", "value": nodeidchildid}],
+            "xpl" : [],
+            "xpl_commands" : {},
+            "xpl_stats" : {}
+        })
 
     # -------------------------------------------------------------------------------------------------
     def is_number(self, s):

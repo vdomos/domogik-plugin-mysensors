@@ -203,7 +203,7 @@ class MySensors:
     """
     """
     # -------------------------------------------------------------------------------------------------
-    def __init__(self, log, send, createdevice, stop):
+    def __init__(self, log, send, autocreatedev, createdevice, adddetecteddevice, stop):
         """ Init Weather object
             @param log : log instance
             @param send : callback to send values to domogik
@@ -212,7 +212,9 @@ class MySensors:
         """
         self.log = log
         self.send = send
-        self.createdevice = createdevice
+        self.autocreatedev = autocreatedev
+        self.createDevice = createdevice
+        self.addDetectedDevice = adddetecteddevice
         self.stop = stop
         self.nodes = {}
 
@@ -333,8 +335,12 @@ class MySensors:
                     self.send(self.nodes[nodesensor]["dmgid"], nodesensor, "nodetype", ptype) 
                     self.send(self.nodes[nodesensor]["dmgid"], nodesensor, "nodeapiversion", value)
                 else:
-                    self.log.info(u"==> Create new Domogik 'mysensors.node' device for node '%s'" % msg["nodeid"]) 
-                    self.createdevice("Node " + msg["nodeid"], nodesensor, "mysensors.node")
+                    if autocreatedev:
+                        self.log.info(u"==> Create new Domogik 'mysensors.node' device for node '%s'" % msg["nodeid"])
+                        self.createDevice("Node " + msg["nodeid"], nodesensor, "mysensors.node") if autocreatedev
+                    else:
+                        self.log.info(u"==> Add new Domogik 'mysensors.node' device for node '%s' in detected devices list" % msg["nodeid"])
+                        self.addDetectedDevice("Node " + msg["nodeid"], nodesensor, "mysensors.node")
                     #while nodesensor not in self.nodes or not self.stop.isSet():        # Wait device creation
                     #    pass
                     self.stop.wait(2)        # Wait device creation
@@ -345,8 +351,12 @@ class MySensors:
             self.log.info(u"==> Receive PRESENTATION message for Node %s type=%s Name='%s'" % (nodesensor, ptype, value))
             # INFO Receive PRESENTATION message for Node 46.2 type=S_LIGHT_LEVEL Name='Buanderie'
             if new_nodesensor:
-                self.log.info(u"==> Create new Domogik 'mysensors.%s' device for sensor node '%s'" % (ptype.lower(), nodesensor)) 
-                self.createdevice(value, nodesensor, "mysensors." + ptype.lower())           # "mysensors." + ptype.lower() = "mysensors.s_temp"
+                if autocreatedev:
+                    self.log.info(u"==> Create new Domogik 'mysensors.%s' device for sensor node '%s'" % (ptype.lower(), nodesensor))
+                    self.createDevice(value, nodesensor, "mysensors." + ptype.lower())           # "mysensors." + ptype.lower() = "mysensors.s_temp"
+                else:
+                    self.log.info(u"==> Add new Domogik 'mysensors.%s' device for sensor node '%s' in detected devices list" % (ptype.lower(), nodesensor))
+                    self.addDetectedDevice(value, nodesensor, "mysensors." + ptype.lower())      # "mysensors." + ptype.lower() = "mysensors.s_temp"
             else:
                 ### update device ?
                 pass
