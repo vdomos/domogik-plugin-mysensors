@@ -16,11 +16,19 @@
     "configuration": [
         {
             "name": "Serial MySensors Gateway Device",
-            "default": "", 
             "description": "Serial MySensors Gateway Device (/dev/ttyUSBx)", 
-            "key": "gw_device", 
-            "required": "yes", 
-            "type": "string"
+            "key": "gw_device",
+            "required": "yes",
+            "type": "string",
+            "default": ""
+        },
+        {
+            "name": "Enables device's automatic creation",
+            "description": "Devices will be create at Presentation's Node if enable, otherwise will appear in detected devices tab",
+            "key": "autocreatedev",
+            "required": "no",
+            "type": "boolean",
+            "default": false
         } 
     ],
 
