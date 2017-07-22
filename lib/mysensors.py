@@ -254,7 +254,7 @@ class MySensors:
              
             time.sleep(0.2)
              
-        self.log.info(NAME + u" gwListen terminated")
+        self.log.info(u"gwListen terminated")
         self.gateway.close()
         return
 
@@ -306,7 +306,7 @@ class MySensors:
                         self.processStreamMsg(gwMsg)                    
                     
             time.sleep(0.2)
-        self.log.info(NAME + u" parseGwMsg terminated")
+        self.log.info(u"parseGwMsg terminated")
         return
         
 
