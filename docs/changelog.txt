@@ -2,6 +2,12 @@
 Changelog
 =========
 
+0.3
+===
+
+* First adds to support ethernet gateway
+
+
 0.1
 ===
 

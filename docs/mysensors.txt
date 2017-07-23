@@ -54,7 +54,7 @@ Three **Bathroom** devices with one or more sensors will automatically be create
 
 .. warning::    
     * For now, it is a first version of the plugin that does not manage all the possibilities of the protocol.
-    * The plugin only supports the serial gateway and the latest version of the **v2.x** API
+    * The plugin only supports the serial, ethernet gateway and the latest version of the **v2.x** API
     * Node sensor must be set with a unique ID, plugin don't send it for now.
 
 Dependencies
@@ -79,7 +79,7 @@ You must configure the serial device for the Gateway:
 ===================== =========================== ======================================================================
 Key                   Type                        Description
 ===================== =========================== ======================================================================
-gw_device             String                      Serial MySensors Gateway Device (/dev/ttyUSBx)
+gw_device             String                      Serial/Ethernet MySensors Gateway Device (/dev/ttyUSBx or @IP|host:port)
 ===================== =========================== ======================================================================
 
 
