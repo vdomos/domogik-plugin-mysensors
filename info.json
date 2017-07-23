@@ -10,25 +10,17 @@
         "domogik_min_version": "0.5.0",
         "name": "mysensors",
         "type": "plugin",
-        "version": "0.20170329"
+        "version": "0.3"
     },
 
     "configuration": [
         {
             "name": "Serial MySensors Gateway Device",
-            "description": "Serial MySensors Gateway Device (/dev/ttyUSBx)", 
+            "description": "Serial or Ethernet MySensors Gateway device (/dev/ttyUSBx or @IP|host:port)", 
             "key": "gw_device",
             "required": "yes",
             "type": "string",
             "default": ""
-        },
-        {
-            "name": "Enables device's automatic creation",
-            "description": "Devices will be create at Presentation's Node if enable, otherwise will appear in detected devices tab",
-            "key": "autocreatedev",
-            "required": "no",
-            "type": "boolean",
-            "default": false
         } 
     ],
 
@@ -41,9 +33,9 @@
             "sensors": ["nodetype", "nodeapiversion", "i_config", "i_sketch_name", "i_sketch_version", "i_battery_level"], 
             "parameters": [
                     {
-                        "key": "nodeid",
+                        "key": "nodesensor",
                         "xpl": false,
-                        "description": "nodeid (ex: 44)",
+                        "description": "nodeid.255 (ex: 44.255)",
                         "type": "string",
                         "default": ""
                     }
@@ -89,7 +81,7 @@
             "sensors": ["v_light_level", "v_level"],
             "parameters": [
                     {
-                        "key": "nodeid",
+                        "key": "nodesensor",
                         "xpl": false,
                         "description": "nodeid.child (ex: 44.1)",
                         "type": "string",
@@ -105,7 +97,7 @@
             "sensors": ["v_status"],
             "parameters": [
                     {
-                        "key": "nodeid",
+                        "key": "nodesensor",
                         "xpl": false,
                         "description": "nodeid.child (ex: 44.1)",
                         "type": "string",
@@ -121,7 +113,7 @@
             "sensors": ["v_status", "v_percentage"],
             "parameters": [
                     {
-                        "key": "nodeid",
+                        "key": "nodesensor",
                         "xpl": false,
                         "description": "nodeid.child (ex: 44.1)",
                         "type": "string",
@@ -137,7 +129,7 @@
             "sensors": ["v_pressure", "v_forecast"],
             "parameters": [
                     {
-                        "key": "nodeid",
+                        "key": "nodesensor",
                         "xpl": false,
                         "description": "nodeid.child (ex: 44.1)",
                         "type": "string",
@@ -154,7 +146,7 @@
             "sensors": ["v_status"],
             "parameters": [
                     {
-                        "key": "nodeid",
+                        "key": "nodesensor",
                         "xpl": false,
                         "description": "nodeid.child (ex: 44.1)",
                         "type": "string",

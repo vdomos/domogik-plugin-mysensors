@@ -63,17 +63,16 @@ class MySensorsManager(Plugin):
         self.sensors = self.get_sensors(self.devices)
 
         self.mysensors_gwdevice = self.get_config("gw_device")
-        self.mysensors_autocreatedev = self.get_config("autocreatedev")
         
         # Init MySensors Manager
-        self.mysensorsmanager = MySensors(self.log, self.send_data, self.mysensors_autocreatedev, self.create_device, self.add_detected_device, self.get_stop())
+        self.mysensorsmanager = MySensors(self.log, self.send_data, self.create_device, self.get_stop())
         
         # Set nodes list
         self.setMySensorsNodesList(self.devices)
 
         # Open the MySensors serial device
         try:
-            self.mysensorsmanager.gwopen(self.mysensors_gwdevice)
+            self.mysensorsmanager.gwopen(self.mysensors_gwdevice, False)
         except MySensorsException as e:
             self.log.error(e.value)
             print(e.value)
@@ -234,29 +233,13 @@ class MySensorsManager(Plugin):
         msg = MQMessage()
         msg.set_action('device.create')
         msg.set_data(devicedata)
-        response = cli.request('dbmgr', msg.get(), timeout=10).get()
+        response = cli.request('admin', msg.get(), timeout=10).get()
+        #response = cli.request('dbmgr', msg.get(), timeout=10).get()   # For Domogik < 0.6
         create_result = json.loads(response[1])             # response[1] is a string !
         self.log.debug(u"==> Create device result: '%s'" % response)
         if not create_result["status"]:
             self.log.error("### Failed to create device '%s' (%s) !" % (nodeidchildid))
 
-
-    # -------------------------------------------------------------------------------------------------
-    def add_detected_device(self, name, nodeidchildid, devicetype):
-        ''' Add new detected device
-        @param name : Device's name
-        @param nodeidchildid : Node id
-        @param devicetype : Devices's type
-        '''
-        self.device_detected({
-            "device_type" : devicetype,
-            "name": name,
-            "reference" : "Node " + nodeidchildid,
-            "global" : [{"key": "nodesensor", "value": nodeidchildid}],
-            "xpl" : [],
-            "xpl_commands" : {},
-            "xpl_stats" : {}
-        })
 
     # -------------------------------------------------------------------------------------------------
     def is_number(self, s):

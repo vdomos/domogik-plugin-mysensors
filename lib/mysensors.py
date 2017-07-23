@@ -29,6 +29,7 @@ along with Domogik. If not, see U{http://www.gnu.org/licenses}.
 import traceback
 import time
 import serial
+import socket
 from Queue import Queue
 
 
@@ -184,6 +185,7 @@ streamType = [
         "ST_IMAGE"
     ]
 
+SOCKETTIMEOUT = 120
 
 
 class MySensorsException(Exception):
@@ -203,7 +205,7 @@ class MySensors:
     """
     """
     # -------------------------------------------------------------------------------------------------
-    def __init__(self, log, send, autocreatedev, createdevice, adddetecteddevice, stop):
+    def __init__(self, log, send, createdevice, stop):
         """ Init Weather object
             @param log : log instance
             @param send : callback to send values to domogik
@@ -212,9 +214,7 @@ class MySensors:
         """
         self.log = log
         self.send = send
-        self.autocreatedev = autocreatedev
         self.createDevice = createdevice
-        self.addDetectedDevice = adddetecteddevice
         self.stop = stop
         self.nodes = {}
 
@@ -224,20 +224,44 @@ class MySensors:
 
 
     # -------------------------------------------------------------------------------------------------
-    def gwopen(self, device):
+    def gwopen(self, device, reconnect):
         """ open Gateway device
         """
-        self.log.info(u"==> Opening MySensors Gateway device : %s" % device)
-        try:
-            self.gateway = serial.Serial(device, 115200, timeout=1)
-            self.log.info(u"==> Gateway opened")
-            self.gateway.setDTR(True)       # DTR à '0' pour reset Arduino Nano
-            resp = self.gateway.read(1024)  # Purge buffer
-            time.sleep(0.2)
-            self.gateway.setDTR(False)      # DTR à '0' pour reset Arduino Nano         
-        except:
-            error = "### Failed to open Gateway device : %s : %s" % (device, str(traceback.format_exc()))
-            raise MySensorsException(error)
+        # For Ethernet Gateway                    
+        if ":" in device:
+            self.log.info("==> Open connection to MySensors Ethernet Gateway: '%s'" % device)
+            self.ethernetGateway = True
+            try:
+                addr = device.split(':')
+                addr = (addr[0], int(addr[1]))
+                self.gateway = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                self.gateway.connect(addr)
+                self.gateway.settimeout(SOCKETTIMEOUT)       # Add timeout for no blocking connection.
+                self.log.info(u"==> Ethernet Gateway opened")
+                return True
+            except:
+                if reconnect:
+                    self.log.error("### Failed reconnecting to ethernet Gateway, Waiting few minutes before redo !" )
+                    return False
+                else:
+                    error = "### Failed to open Ethernet Gateway '%s', Check if the address:port is ok: %s" % (device, str(traceback.format_exc()))
+                    raise MySensorsException(error)
+
+        # For Serial Gateway                    
+        else:
+            self.log.info(u"==> Opening connection to MySensors Serial Gateway: %s" % device)
+            self.ethernetGateway = False
+            try:
+                self.gateway = serial.Serial(device, 115200, timeout=1)
+                self.log.info(u"==> Gateway opened")
+                self.gateway.setDTR(True)       # DTR à '0' for resetting Arduino Nano
+                resp = self.gateway.read(1024)  # Purge buffer
+                time.sleep(0.2)
+                self.gateway.setDTR(False) 
+                self.log.info(u"==> Serial Gateway opened")
+            except:
+                error = "### Failed to open MySensors Serial Gateway device : %s : %s" % (device, str(traceback.format_exc()))
+                raise MySensorsException(error)
 
 
     # -------------------------------------------------------------------------------------------------
@@ -246,13 +270,42 @@ class MySensors:
         """
         self.log.info(u"==> Start listening gateway ...")
         while not self.stop.isSet():
-            gwline = self.gwread()
-            if gwline != None:
-                #self.log.info(u"==> Received : %s" % gwline.strip())
-                self.msgReceiveQueue.put(gwline)                
+            
+            # For Ethernet Gateway                    
+            if self.ethernetGateway:
+                # Receive message
+                try:
+                    data = self.gateway.recv(4096)
+                except (socket.error, socket.timeout), e:
+                    self.log.error("### Fail or Timeout receiving data from ethernet Gateway, Waiting few minutes before reconnect: %s" % e)
+                    self.ethernetGwReconnect()
+                if data:
+                    for receivedMsg in data.splitlines():
+                        #self.log.info(u"==> Received : %s" % receivedMsg)
+                        self.msgReceiveQueue.put(receivedMsg.decode('utf-8'))
 
-            if not self.msgSendQueue.empty():
-                 self.gwSend(self.msgSendQueue.get())
+                # Send message
+                if not self.msgSendQueue.empty():
+                    sendMsg = self.msgSendQueue.get()
+                    if sendMsg:
+                        try:
+                            self.gateway.send(sendMsg)
+                        except socket.error, e:
+                            self.log.error("### Failed to send message '%s' to Ethernet Gateway: '%s', Waiting few minutes before reconnect !" % (sendMsg, e))
+                            self.ethernetGwReconnect()
+
+            # For Serial Gateway                    
+            else:
+                # Receive message
+                receivedMsg = self.gateway.readline()
+                if receivedMsg:
+                    self.msgReceiveQueue.put(receivedMsg.decode('utf-8'))
+            
+                # Send message
+                if not self.msgSendQueue.empty():
+                    sendMsg = self.msgSendQueue.get()
+                    if sendMsg:
+                        self.gateway.write(sendMsg)  
              
             time.sleep(0.2)
              
@@ -262,24 +315,13 @@ class MySensors:
 
 
     # -------------------------------------------------------------------------------------------------
-    def gwread(self):
-        """ read one line on gateway
-        """
-        
-        gwReceiveLine = self.gateway.readline()
-        if gwReceiveLine:
-            return gwReceiveLine.decode('utf-8')
-        else:
-            return None
- 
-    
-    # -------------------------------------------------------------------------------------------------
-    def gwSend(self, message):
-        """Write a Message to the gateway."""
-        if not message:
-            return
-        self.gateway.write(message)    
-                              
+    def ethernetGwReconnect(self):
+        connectionok = False
+        while not connectionok and not self.stop.isSet():
+            self.gateway.close()
+            self.stop.wait(120)
+            connectionok = self.gwopen(reconnect = True)
+
 
     # -------------------------------------------------------------------------------------------------
     def parseGwMsg(self):
@@ -317,11 +359,6 @@ class MySensors:
         """
         """
         nodesensor = msg["nodeid"] + '.' + msg["childsensorid"]
-        if nodesensor not in self.nodes:
-            self.nodes[nodesensor] = {}
-            new_nodesensor = True
-        else:
-            new_nodesensor = False
             
         ptype = presentationTypes[int(msg["type"])]                             # Example: "S_ARDUINO_NODE" ou "S_TEMP" 
         value = msg["payload"]                                                  # Example: "2.1.1" ou "Bureau"
@@ -331,32 +368,23 @@ class MySensors:
             self.log.info(u"==> Receive PRESENTATION message for Node %s type=%s version='%s'" % (nodesensor, ptype, value))
             # INFO Receive PRESENTATION message for Node 46.255 type=S_ARDUINO_NODE version='2.1.1'
             if msg["nodeid"] != "0":
-                if not new_nodesensor:
+                if nodesensor in self.nodes:
                     self.send(self.nodes[nodesensor]["dmgid"], nodesensor, "nodetype", ptype) 
                     self.send(self.nodes[nodesensor]["dmgid"], nodesensor, "nodeapiversion", value)
                 else:
-                    if autocreatedev:
-                        self.log.info(u"==> Create new Domogik 'mysensors.node' device for node '%s'" % msg["nodeid"])
-                        self.createDevice("Node " + msg["nodeid"], nodesensor, "mysensors.node") if autocreatedev
-                    else:
-                        self.log.info(u"==> Add new Domogik 'mysensors.node' device for node '%s' in detected devices list" % msg["nodeid"])
-                        self.addDetectedDevice("Node " + msg["nodeid"], nodesensor, "mysensors.node")
-                    #while nodesensor not in self.nodes or not self.stop.isSet():        # Wait device creation
-                    #    pass
-                    self.stop.wait(2)        # Wait device creation
+                    self.log.info(u"==> Create new Domogik 'mysensors.node' device for node '%s'" % msg["nodeid"])
+                    self.createDevice("Node " + msg["nodeid"], nodesensor, "mysensors.node")
+                    #while nodesensor not in self.nodes or not self.stop.isSet(): pass       # Wait device creation
+                    self.stop.wait(3)        # Wait device creation
                     self.send(self.nodes[nodesensor]["dmgid"], nodesensor, "nodetype", ptype) 
                     self.send(self.nodes[nodesensor]["dmgid"], nodesensor, "nodeapiversion", value)
 
         else:
             self.log.info(u"==> Receive PRESENTATION message for Node %s type=%s Name='%s'" % (nodesensor, ptype, value))
             # INFO Receive PRESENTATION message for Node 46.2 type=S_LIGHT_LEVEL Name='Buanderie'
-            if new_nodesensor:
-                if autocreatedev:
-                    self.log.info(u"==> Create new Domogik 'mysensors.%s' device for sensor node '%s'" % (ptype.lower(), nodesensor))
-                    self.createDevice(value, nodesensor, "mysensors." + ptype.lower())           # "mysensors." + ptype.lower() = "mysensors.s_temp"
-                else:
-                    self.log.info(u"==> Add new Domogik 'mysensors.%s' device for sensor node '%s' in detected devices list" % (ptype.lower(), nodesensor))
-                    self.addDetectedDevice(value, nodesensor, "mysensors." + ptype.lower())      # "mysensors." + ptype.lower() = "mysensors.s_temp"
+            if nodesensor not in self.nodes:
+                self.log.info(u"==> Create new Domogik 'mysensors.%s' device for sensor node '%s'" % (ptype.lower(), nodesensor))
+                self.createDevice(value, nodesensor, "mysensors." + ptype.lower())           # "mysensors." + ptype.lower() = "mysensors.s_temp"
             else:
                 ### update device ?
                 pass
@@ -374,17 +402,15 @@ class MySensors:
         value = msg["payload"]                                      # Example: "44.8"
 
         if nodesensor not in self.nodes:
-            self.log.warning(u"==> New sensor node '%s' (type = '%s', value = '%s') waiting Node PRESENTATION for creating device !" % (nodesensor, vtype, value))
+            self.log.warning(u"==> New sensor node '%s' (type = '%s', value = '%s'), Waiting Node PRESENTATION for creating device !" % (nodesensor, vtype, value))
             return
 
         self.nodes[nodesensor]["vtype"] = vtype
         self.log.info(u"==> Received SET value '%s' for node '%s' (%s/%s) sensor" % (value, nodesensor, self.nodes[nodesensor]["name"], vtype.lower()))
         # INFO Received SET value '1025.9' for node '44.2' (Barometre/v_pressure) sensor
-        self.send(self.nodes[nodesensor]["dmgid"], nodesensor, vtype.lower(), value)    # vtype.lower() = "v_hum"
-                    
+        self.send(self.nodes[nodesensor]["dmgid"], nodesensor, vtype.lower(), value)    # vtype.lower() = "v_hum"                    
 
 
-    
     # -------------------------------------------------------------------------------------------------
     def processReqMsg(self, msg):
         """Process a req message."""
@@ -409,29 +435,29 @@ class MySensors:
 
 
         if nodesensor not in self.nodes:
-            self.log.warning(u"==> New sensor node '%s' (type = '%s', value = '%s') waiting Node PRESENTATION for creating device !" % (nodesensor, itype, value))
+            self.log.warning(u"==> New sensor node '%s' (type = '%s', value = '%s'), Waiting Node'device to be create !" % (nodesensor, itype, value))
             return
         
         if itype == "I_CONFIG":                             # Config request from node. Reply with (M)etric or (I)mperal back to sensor.
-            self.log.info(u"==> Received I_CONFIG request for node '%s': '%s'" % (msg["nodeid"], value))
+            self.log.info(u"==> Received I_CONFIG request for node '%s': value = '%s'" % (msg["nodeid"], value))
                   
         elif itype == "I_SKETCH_NAME":                      # Optional sketch name that can be used to identify sensor in the Controller GUI
-            self.log.info(u"==> Received I_SKETCH_NAME information for node '%s': '%s'" % (msg["nodeid"], value))
+            self.log.info(u"==> Received I_SKETCH_NAME information for node '%s': value = '%s'" % (msg["nodeid"], value))
                   
         elif itype == "I_SKETCH_VERSION":                   # Optional sketch version that can be reported to keep track of the version of sensor in the Controller GUI
-            self.log.info(u"==> Received I_SKETCH_VERSION information for node '%s': '%s'" % (msg["nodeid"], value))
+            self.log.info(u"==> Received I_SKETCH_VERSION information for node '%s': value = '%s'" % (msg["nodeid"], value))
                   
         elif itype == "I_BATTERY_LEVEL":                    
-            self.log.info(u"==> Received I_BATTERY_LEVEL information for node '%s':  '%s'" % (msg["nodeid"], value))
+            self.log.info(u"==> Received I_BATTERY_LEVEL information for node '%s': value = '%s'" % (msg["nodeid"], value))
 
         elif itype == "I_DISCOVER_RESPONSE":                 # Discover response
-            self.log.info(u"==> Received I_DISCOVER_RESPONSE information (untreated) for node '%s': '%s'" % (msg["nodeid"], value))
+            self.log.info(u"==> Received I_DISCOVER_RESPONSE information (untreated) for node '%s': value = '%s'" % (msg["nodeid"], value))
             return
         else:
             self.log.info(u"==> Received '%s' information (untreated) for node '%s.%s':  '%s'" % (msg["nodeid"], msg["childsensorid"], itype, value))
             return
 
-        self.send(self.nodes[nodesensor]["dmgid"], nodesensor, itype.lower(), value) 
+        self.send(self.nodes[nodesensor]["dmgid"], nodesensor, itype.lower(), value)
         
 
     # -------------------------------------------------------------------------------------------------
