@@ -65,14 +65,14 @@ class MySensorsManager(Plugin):
         self.mysensors_gwdevice = self.get_config("gw_device")
         
         # Init MySensors Manager
-        self.mysensorsmanager = MySensors(self.log, self.send_data, self.create_device, self.get_stop())
+        self.mysensorsmanager = MySensors(self.log, self.mysensors_gwdevice , self.send_data, self.create_device, self.get_stop())
         
         # Set nodes list
         self.setMySensorsNodesList(self.devices)
 
         # Open the MySensors serial device
         try:
-            self.mysensorsmanager.gwopen(self.mysensors_gwdevice, False)
+            self.mysensorsmanager.gwopen()
         except MySensorsException as e:
             self.log.error(e.value)
             print(e.value)
@@ -132,7 +132,7 @@ class MySensorsManager(Plugin):
         data = {}
         devicename = self.mysensorsmanager.nodes[nodesensor]["name"]
         data[self.sensors[device_id][sensordevice]] = value         # sensordevice = "v_temp" or i_battery_level or "nodetype", ...                         
-        self.log.info("==> Publish value '%s' for node '%s' (%s/%s) sensor" % (value, nodesensor, devicename, sensordevice))
+        self.log.info(u"==> Publish value '%s' for node '%s' (%s/%s) sensor" % (value, nodesensor, devicename, sensordevice))
 
         try:
             self._pub.send_event('client.sensor', data)
@@ -238,7 +238,7 @@ class MySensorsManager(Plugin):
         create_result = json.loads(response[1])             # response[1] is a string !
         self.log.debug(u"==> Create device result: '%s'" % response)
         if not create_result["status"]:
-            self.log.error("### Failed to create device '%s' (%s) !" % (nodeidchildid))
+            self.log.error(u"### Failed to create device '%s' (%s) !" % (nodeidchildid))
 
 
     # -------------------------------------------------------------------------------------------------

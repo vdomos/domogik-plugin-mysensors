@@ -185,7 +185,7 @@ streamType = [
         "ST_IMAGE"
     ]
 
-SOCKETTIMEOUT = 120
+SOCKETTIMEOUT = 360
 
 
 class MySensorsException(Exception):
@@ -205,7 +205,7 @@ class MySensors:
     """
     """
     # -------------------------------------------------------------------------------------------------
-    def __init__(self, log, send, createdevice, stop):
+    def __init__(self, log, gwdevice, send, createdevice, stop):
         """ Init Weather object
             @param log : log instance
             @param send : callback to send values to domogik
@@ -213,6 +213,7 @@ class MySensors:
             @param get_parameter : a callback to a plugin core function
         """
         self.log = log
+        self.gwdevice = gwdevice
         self.send = send
         self.createDevice = createdevice
         self.stop = stop
@@ -224,15 +225,15 @@ class MySensors:
 
 
     # -------------------------------------------------------------------------------------------------
-    def gwopen(self, device, reconnect):
+    def gwopen(self, reconnect=False):
         """ open Gateway device
         """
         # For Ethernet Gateway                    
-        if ":" in device:
-            self.log.info("==> Open connection to MySensors Ethernet Gateway: '%s'" % device)
+        if ":" in self.gwdevice:
+            self.log.info(u"==> Open connection to MySensors Ethernet Gateway: '%s'" % self.gwdevice)
             self.ethernetGateway = True
             try:
-                addr = device.split(':')
+                addr = self.gwdevice.split(':')
                 addr = (addr[0], int(addr[1]))
                 self.gateway = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
                 self.gateway.connect(addr)
@@ -241,10 +242,11 @@ class MySensors:
                 return True
             except:
                 if reconnect:
-                    self.log.error("### Failed reconnecting to ethernet Gateway, Waiting few minutes before redo !" )
+                    self.log.error(u"### Failed reconnecting to ethernet Gateway, Waiting few minutes before redo !" )
                     return False
                 else:
-                    error = "### Failed to open Ethernet Gateway '%s', Check if the address:port is ok: %s" % (device, str(traceback.format_exc()))
+                    #error = u"### Failed to open Ethernet Gateway '%s', Check if the address:port is ok" % format(self.gwdevice, traceback.format_exc())
+                    error = u"### Failed to open Ethernet Gateway '%s', Check if the address:port is ok" % self.gwdevice
                     raise MySensorsException(error)
 
         # For Serial Gateway                    
@@ -260,7 +262,7 @@ class MySensors:
                 self.gateway.setDTR(False) 
                 self.log.info(u"==> Serial Gateway opened")
             except:
-                error = "### Failed to open MySensors Serial Gateway device : %s : %s" % (device, str(traceback.format_exc()))
+                error = u"### Failed to open MySensors Serial Gateway device : %s : %s" % (device, str(traceback.format_exc()))
                 raise MySensorsException(error)
 
 
@@ -277,7 +279,7 @@ class MySensors:
                 try:
                     data = self.gateway.recv(4096)
                 except (socket.error, socket.timeout), e:
-                    self.log.error("### Fail or Timeout receiving data from ethernet Gateway, Waiting few minutes before reconnect: %s" % e)
+                    self.log.error(u"### Fail or Timeout receiving data from ethernet Gateway, Waiting few minutes before reconnect: %s" % e)
                     self.ethernetGwReconnect()
                 if data:
                     for receivedMsg in data.splitlines():
@@ -291,7 +293,7 @@ class MySensors:
                         try:
                             self.gateway.send(sendMsg)
                         except socket.error, e:
-                            self.log.error("### Failed to send message '%s' to Ethernet Gateway: '%s', Waiting few minutes before reconnect !" % (sendMsg, e))
+                            self.log.error(u"### Failed to send message '%s' to Ethernet Gateway: '%s', Waiting few minutes before reconnect !" % (sendMsg, e))
                             self.ethernetGwReconnect()
 
             # For Serial Gateway                    
@@ -319,7 +321,7 @@ class MySensors:
         connectionok = False
         while not connectionok and not self.stop.isSet():
             self.gateway.close()
-            self.stop.wait(120)
+            self.stop.wait(60)
             connectionok = self.gwopen(reconnect = True)
 
 
