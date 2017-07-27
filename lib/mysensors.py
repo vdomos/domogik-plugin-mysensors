@@ -251,18 +251,18 @@ class MySensors:
 
         # For Serial Gateway                    
         else:
-            self.log.info(u"==> Opening connection to MySensors Serial Gateway: %s" % device)
+            self.log.info(u"==> Opening connection to MySensors Serial Gateway: %s" % self.gwdevice)
             self.ethernetGateway = False
             try:
-                self.gateway = serial.Serial(device, 115200, timeout=1)
+                self.gateway = serial.Serial(self.gwdevice, 115200, timeout=1)
                 self.log.info(u"==> Gateway opened")
-                self.gateway.setDTR(True)       # DTR à '0' for resetting Arduino Nano
+                self.gateway.setDTR(True)       # DTR set to '0' for resetting Arduino Nano
                 resp = self.gateway.read(1024)  # Purge buffer
                 time.sleep(0.2)
                 self.gateway.setDTR(False) 
                 self.log.info(u"==> Serial Gateway opened")
             except:
-                error = u"### Failed to open MySensors Serial Gateway device : %s : %s" % (device, str(traceback.format_exc()))
+                error = u"### Failed to open MySensors Serial Gateway device : %s : %s" % (self.gwdevice, str(traceback.format_exc()))
                 raise MySensorsException(error)
 
 
