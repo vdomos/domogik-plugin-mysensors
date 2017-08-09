@@ -2,6 +2,8 @@
 Development informations
 ========================
 
+MySensors documentation
+=======================
 
 You can find a lot of information in this www.mysensors.org web pages:
 
@@ -10,4 +12,67 @@ You can find a lot of information in this www.mysensors.org web pages:
 * `MySensors Library - v2.x <https://www.mysensors.org/download/sensor_api_20>`_
 * `Serial Protocol - 2.x <https://www.mysensors.org/download/serial_api_20>`_
 * `Build sketchs examples <https://www.mysensors.org/build>`_
+
+
+Testing Gateways
+================
+
+Serial gateway: ::
+
+    $ picocom -b 115200 --imap lfcrlf /dev/mysensors     
+    Terminal ready
+    0;255;3;0;9;MCO:BGN:INIT GW,CP=RNNGA--,VER=2.1.1
+    0;255;3;0;9;TSM:INIT
+    0;255;3;0;9;TSF:WUR:MS=0
+    0;255;3;0;9;TSM:INIT:TSP OK
+    0;255;3;0;9;TSM:INIT:GW MODE
+    0;255;3;0;9;TSM:READY:ID=0,PAR=0,DIS=0
+    0;255;3;0;9;MCO:REG:NOT NEEDED
+    0;255;3;0;14;Gateway startup complete.
+    0;255;0;0;18;2.1.1
+    0;255;3;0;9;MCO:BGN:STP
+    0;255;3;0;9;MCO:BGN:INIT OK,TSP=1
+    0;255;3;0;9;TSF:MSG:READ,46-46-0,s=0,c=1,t=0,pt=7,l=5,sg=0:20.3
+    46;0;1;0;0;20.3
+    0;255;3;0;9;TSF:MSG:READ,46-46-0,s=1,c=1,t=23,pt=7,l=5,sg=0:99.1
+    46;1;1;0;23;99.1
+    0;255;3;0;9;TSF:MSG:READ,46-46-0,s=255,c=3,t=0,pt=1,l=1,sg=0:102
+    46;255;3;0;0;102
+    44;0;1;0;0;20.1
+    0;255;3;0;9;TSF:MSG:READ,44-44-0,s=1,c=1,t=1,pt=7,l=5,sg=0:60.8
+    44;1;1;0;1;60.8
+    0;255;3;0;9;TSF:MSG:READ,44-44-0,s=2,c=1,t=23,pt=7,l=5,sg=0:100.1
+    44;2;1;0;23;100.1
+    0;255;3;0;9;TSF:MSG:READ,44-44-0,s=255,c=3,t=0,pt=1,l=1,sg=0:88
+    44;255;3;0;0;88
+    48;1;1;0;1;55.9
+    0;255;3;0;9;TSF:MSG:READ,48-48-0,s=3,c=1,t=37,pt=7,l=5,sg=0:329.0
+    48;3;1;0;37;329.0
+    0;255;3;0;9;TSF:MSG:READ,44-44-0,s=0,c=1,t=0,pt=7,l=5,sg=0:20.1
+
+"0;255": gateway messages
+
+"44;x", "46;x" or "48;x": Nodes messages
+
+
+Ethernet gateway: ::
+
+    $ telnet arduino 5003
+    Trying 192.168.0.126...
+    Connected to arduino2.
+    Escape character is '^]'.
+    0;255;3;0;14;Gateway startup complete.      |   Receive this message at first connexion after sending a empty line.
+    0;255;0;0;18;2.1.1                          |
+    46;0;1;0;0;20.3
+    46;1;1;0;23;99.0
+    46;255;3;0;0;102
+    44;0;1;0;0;20.2
+    44;1;1;0;1;60.6
+    44;2;1;0;23;100.1
+    44;255;3;0;0;90
+    48;1;1;0;1;56.0
+    48;3;1;0;37;255.0
+
+
+
 

@@ -246,7 +246,8 @@ class MySensors:
                     return False
                 else:
                     #error = u"### Failed to open Ethernet Gateway '%s', Check if the address:port is ok" % format(self.gwdevice, traceback.format_exc())
-                    error = u"### Failed to open Ethernet Gateway '%s', Check if the address:port is ok" % self.gwdevice
+                    error = u"### Failed to open Ethernet Gateway '%s', Check if the address:port is ok" % self.gwdevice    
+                    # To test ethernet gateway: telnet @IP:5003
                     raise MySensorsException(error)
 
         # For Serial Gateway                    
