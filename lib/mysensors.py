@@ -237,7 +237,8 @@ class MySensors:
                 addr = (addr[0], int(addr[1]))
                 self.gateway = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
                 self.gateway.connect(addr)
-                self.gateway.settimeout(SOCKETTIMEOUT)       # Add timeout for no blocking connection.
+                self.gateway.settimeout(SOCKETTIMEOUT)      # Add timeout for no blocking connection.
+                self.gateway.send("\n")                     # Send empty line to get gateway info., must received a 'Gateway startup complete.'
                 self.log.info(u"==> Ethernet Gateway opened")
                 return True
             except:
