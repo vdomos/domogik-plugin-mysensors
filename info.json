@@ -16,7 +16,7 @@
     "configuration": [
         {
             "name": "Serial MySensors Gateway Device",
-            "description": "Serial or Ethernet MySensors Gateway device (/dev/ttyUSBx or @IP|host:port)", 
+            "description": "Serial or Ethernet MySensors Gateway device (/dev/ttyUSBx or arduino:5003)", 
             "key": "gw_device",
             "required": "yes",
             "type": "string",
