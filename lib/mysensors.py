@@ -257,7 +257,6 @@ class MySensors:
             self.ethernetGateway = False
             try:
                 self.gateway = serial.Serial(self.gwdevice, 115200, timeout=1)
-                self.log.info(u"==> Gateway opened")
                 self.gateway.setDTR(True)       # DTR set to '0' for resetting Arduino Nano
                 resp = self.gateway.read(1024)  # Purge buffer
                 time.sleep(0.2)
@@ -344,14 +343,15 @@ class MySensors:
                 else:
                     gwMsg = dict(zip(msgParts, msgValue))
                     #self.log.info(u"==> Msg dict : %s" % format(gwMsg))
-                    if commandsType[int(gwMsg["command"])] == "presentation":
-                        self.processPresentationMsg(gwMsg)
-                    elif commandsType[int(gwMsg["command"])] == "set" or commandsType[int(gwMsg["command"])] == "req":
-                        self.processSetMsg(gwMsg)
-                    elif commandsType[int(gwMsg["command"])] == "internal":
-                        self.processInternalMsg(gwMsg)
-                    elif commandsType[int(gwMsg["command"])] == "stream":
-                        self.processStreamMsg(gwMsg)                    
+                    if "command" in gwMsg:
+                        if commandsType[int(gwMsg["command"])] == "presentation":
+                            self.processPresentationMsg(gwMsg)
+                        elif commandsType[int(gwMsg["command"])] == "set" or commandsType[int(gwMsg["command"])] == "req":
+                            self.processSetMsg(gwMsg)
+                        elif commandsType[int(gwMsg["command"])] == "internal":
+                            self.processInternalMsg(gwMsg)
+                        elif commandsType[int(gwMsg["command"])] == "stream":
+                            self.processStreamMsg(gwMsg)
                     
             time.sleep(0.2)
         self.log.info(u"parseGwMsg terminated")
