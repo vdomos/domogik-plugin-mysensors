@@ -137,7 +137,22 @@
                     }
             ]
         },
-
+        "mysensors.s_custom": {
+            "id": "mysensors.s_custom",
+            "description": "",
+            "name": "MySensors s_custom",
+            "commands": [],
+            "sensors": ["v_var1", "v_var2", "v_var3", "v_var4", "v_var5"],
+            "parameters": [
+                    {
+                        "key": "nodesensor",
+                        "xpl": false,
+                        "description": "nodeid.child (ex: 44.1)",
+                        "type": "string",
+                        "default": ""
+                    }
+            ]
+        },
         "mysensors.s_binary": {
             "id": "mysensors.s_binary",
             "description": "",
@@ -297,7 +312,76 @@
                     "round_value": 0
             }
         },
-        
+        "v_var1" : {
+            "name" : "Var1",
+            "incremental": false,
+            "data_type" : "DT_Number",
+            "conversion" : "",
+            "timeout": 900,
+            "history": {
+                    "store": true,
+                    "duplicate": false,
+                    "max": 0,
+                    "expire": 0,
+                    "round_value": 0
+            }
+        },       
+        "v_var2" : {
+            "name" : "Var2",
+            "incremental": false,
+            "data_type" : "DT_Number",
+            "conversion" : "",
+            "timeout": 900,
+            "history": {
+                    "store": true,
+                    "duplicate": false,
+                    "max": 0,
+                    "expire": 0,
+                    "round_value": 0
+            }
+        },       
+        "v_var3" : {
+            "name" : "Var3",
+            "incremental": false,
+            "data_type" : "DT_Number",
+            "conversion" : "",
+            "timeout": 900,
+            "history": {
+                    "store": true,
+                    "duplicate": false,
+                    "max": 0,
+                    "expire": 0,
+                    "round_value": 0
+            }
+        },       
+        "v_var4" : {
+            "name" : "Var4",
+            "incremental": false,
+            "data_type" : "DT_Number",
+            "conversion" : "",
+            "timeout": 900,
+            "history": {
+                    "store": true,
+                    "duplicate": false,
+                    "max": 0,
+                    "expire": 0,
+                    "round_value": 0
+            }
+        },       
+        "v_var5" : {
+            "name" : "Var5",
+            "incremental": false,
+            "data_type" : "DT_Number",
+            "conversion" : "",
+            "timeout": 900,
+            "history": {
+                    "store": true,
+                    "duplicate": false,
+                    "max": 0,
+                    "expire": 0,
+                    "round_value": 0
+            }
+        },       
         
         "i_config" : {
             "name" : "Config",
