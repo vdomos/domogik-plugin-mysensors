@@ -322,7 +322,7 @@ class MySensors:
         connectionok = False
         while not connectionok and not self.stop.isSet():
             self.gateway.close()
-            self.stop.wait(60)
+            self.stop.wait(300)
             connectionok = self.gwopen(reconnect = True)
 
 
